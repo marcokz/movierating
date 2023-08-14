@@ -6,12 +6,11 @@ import (
 	"log"
 	"movieraiting/database"
 	"movieraiting/rest"
-
-	"github.com/jackc/pgx/v5/pgxpool"
+	"net/http"
 )
 
 func main() {
-	pool, err := pgxpool.New(context.Background(), "postgres://postgres:pass@127.0.0.1:5432/todo")
+	pool, err := database.Connect(context.Background(), "postgres://postgres:pass@127.0.0.1:5432/todo")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -21,6 +20,12 @@ func main() {
 	handler := rest.NewHandler(db)
 
 	router := chi.NewRouter()
-	router.Post("/movie/users", handler.CreateUser)
-	router.Get("/movie/getusers", handler.GetUsers)
+	router.Post("/users/signup", handler.SignUp)
+	router.Get("/users/signin", handler.SignIn)
+
+	server := http.Server{
+		Addr:    ":8080",
+		Handler: router,
+	}
+	server.ListenAndServe()
 }
